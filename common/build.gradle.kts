@@ -1,6 +1,7 @@
 plugins {
     id("java")
     id("org.springframework.boot") version "3.4.4" apply false
+    id("io.spring.dependency-management") version "1.1.4"
 }
 
 java {
@@ -30,4 +31,5 @@ dependencies {
 
     // Spring Web (щоб працював RestControllerAdvice)
     implementation("org.springframework.boot:spring-boot-starter-web")
+
 }

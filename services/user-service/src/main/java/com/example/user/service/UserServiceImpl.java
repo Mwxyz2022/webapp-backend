@@ -1,6 +1,7 @@
 package com.example.user.service;
 
 import com.example.common.dto.UserDto;
+import com.example.user.mapper.UserMapper;
 import com.example.user.entity.UserEntity;
 import com.example.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -11,9 +12,11 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -23,13 +26,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void createUser(UserDto dto) {
-        UserEntity user = new UserEntity();
-        user.setTelegramUserId(dto.getTelegramUserId());
-        user.setUsername(dto.getUsername());
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setPhotoUrl(dto.getPhotoUrl());
-        user.setRole(dto.getRole());
+        UserEntity user = userMapper.toEntity(dto);
         userRepository.save(user);
     }
 
@@ -40,14 +37,6 @@ public class UserServiceImpl implements UserService {
         UserEntity entity = optional.orElseThrow(() ->
                 new RuntimeException("User not found with Telegram ID: " + telegramUserId));
 
-        return new UserDto(
-                entity.getId(),
-                entity.getTelegramUserId(),
-                entity.getUsername(),
-                entity.getFirstName(),
-                entity.getLastName(),
-                entity.getPhotoUrl(),
-                entity.getRole()
-        );
+        return userMapper.toDto(entity);
     }
 }
