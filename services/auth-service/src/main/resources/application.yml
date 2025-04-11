@@ -1,0 +1,3 @@
+spring:
+  profiles:
+    active: dev  # 👈 тут можна перемикати між dev / prod

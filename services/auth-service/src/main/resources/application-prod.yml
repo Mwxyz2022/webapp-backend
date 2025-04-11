@@ -1,0 +1,16 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: auth-service
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      password: password
+
+telegram:
+  bot-token: real_prod_bot_token
+  check-hash: true

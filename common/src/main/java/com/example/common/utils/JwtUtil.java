@@ -1,53 +1,36 @@
 package com.example.common.utils;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.function.Function;
 
 public class JwtUtil {
-
-    private final Key secretKey;
-    private final long jwtExpirationMs;
+    private final SecretKey secretKey;
+    private final long expirationMs;
 
     public JwtUtil(String secret, long expirationMs) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
-        this.jwtExpirationMs = expirationMs;
+        this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String subject) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(subject)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
-    public boolean isTokenValid(String token) {
-        try {
-            return !extractExpiration(token).before(new Date());
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claimsResolver.apply(claims);
+    public String generateRefreshToken(String subject) {
+        return Jwts.builder()
+                .setSubject(subject)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 7 * 24 * 3600_000)) // 7 днів
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
     }
 }

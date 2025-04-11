@@ -1,29 +1,26 @@
-package com.example.common.dto;
+package com.example.user.entity;
 
-import java.io.Serializable;
+import jakarta.persistence.*;
 
-public class UserDto implements Serializable {
+@Entity
+@Table(name = "users")
+public class UserEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true)
     private String telegramUserId;
+
     private String username;
     private String firstName;
     private String lastName;
     private String photoUrl;
+
     private String role;
 
-    public UserDto() {}
-
-    public UserDto(Long id, String telegramUserId, String username,
-                   String firstName, String lastName, String photoUrl, String role) {
-        this.id = id;
-        this.telegramUserId = telegramUserId;
-        this.username = username;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.photoUrl = photoUrl;
-        this.role = role;
-    }
+    public UserEntity() {}
 
     public Long getId() {
         return id;

@@ -1,0 +1,24 @@
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: always
+
+#logging:
+#  level:
+#    root: DEBUG
+
+spring:
+  application:
+    name: auth-service
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      password: password
+
+telegram:
+  bot-token: "your_test_token"
+  check-hash: false

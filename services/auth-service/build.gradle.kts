@@ -14,22 +14,32 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    // 📦 Залежність на common (DTO, JwtUtil, Exceptions)
-    implementation(project(":common"))
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.1")
+    }
+}
 
-    // ✅ Базові стартери
+dependencies {
+    implementation(project(":common"))
+    implementation(project(":infrastructure:redis-config"))
+
+    // 🌐 REST + Feign
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // 🔐 Security (для відкритого доступу до /auth/telegram)
+    implementation("org.springframework.boot:spring-boot-starter-security")
 
     // 🔐 JWT
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
-    // 🧪 Тести (не обов'язково)
+    // 🧪 Тести
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
