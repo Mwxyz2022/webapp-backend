@@ -2,9 +2,13 @@ package com.example.redis;
 
 public interface RedisTokenRepository {
 
-    void saveAccessToken(String username, String token);
+    void saveAccessToken(String telegramUserId, String token);
 
-    void saveRefreshToken(String username, String token);
+    void saveRefreshToken(String telegramUserId, String token);
 
-    String getAccessToken(String username);
+    String getAccessToken(String telegramUserId);
+
+    void deleteAccessToken(String telegramUserId);
+
+    void deleteRefreshToken(String telegramUserId);
 }

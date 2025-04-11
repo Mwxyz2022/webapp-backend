@@ -15,17 +15,27 @@ public class RedisTokenRepositoryImpl implements RedisTokenRepository {
     }
 
     @Override
-    public void saveAccessToken(String username, String token) {
-        redisTemplate.opsForValue().set("access:" + username, token, Duration.ofHours(1));
+    public void saveAccessToken(String telegramUserId, String token) {
+        redisTemplate.opsForValue().set("access:" + telegramUserId, token, Duration.ofHours(1));
     }
 
     @Override
-    public void saveRefreshToken(String username, String token) {
-        redisTemplate.opsForValue().set("refresh:" + username, token, Duration.ofDays(7));
+    public void saveRefreshToken(String telegramUserId, String token) {
+        redisTemplate.opsForValue().set("refresh:" + telegramUserId, token, Duration.ofDays(7));
     }
 
     @Override
-    public String getAccessToken(String username) {
-        return redisTemplate.opsForValue().get("access:" + username);
+    public String getAccessToken(String telegramUserId) {
+        return redisTemplate.opsForValue().get("access:" + telegramUserId);
+    }
+
+    @Override
+    public void deleteAccessToken(String telegramUserId) {
+        redisTemplate.delete("access:" + telegramUserId);
+    }
+
+    @Override
+    public void deleteRefreshToken(String telegramUserId) {
+        redisTemplate.delete("refresh:" + telegramUserId);
     }
 }

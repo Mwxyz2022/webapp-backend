@@ -34,18 +34,14 @@ public class AuthService {
     }
 
     public String telegramAuth(TelegramAuthRequest request) {
-
-        // 🧯 Null-check
         if (request.getTelegramUserId() == null || request.getUsername() == null) {
             throw new RuntimeException("❌ Telegram ID or Username is null!");
         }
 
-        // ✅ Перевірка хеша (тільки якщо профіль дозволяє)
         if (checkHash && !verifier.isHashValid(request)) {
             throw new RuntimeException("❌ Invalid Telegram hash");
         }
 
-        // 🔍 Check if user exists by Telegram ID
         if (!userClient.exists(request.getTelegramUserId())) {
             UserDto dto = new UserDto(
                     null,
@@ -56,11 +52,9 @@ public class AuthService {
                     request.getPhotoUrl(),
                     "USER"
             );
-
             userClient.create(dto);
         }
 
-        // 🛡️ Генерація токенів
         String accessToken = jwtUtil.generateToken(request.getTelegramUserId());
         String refreshToken = jwtUtil.generateRefreshToken(request.getTelegramUserId());
 
@@ -71,10 +65,17 @@ public class AuthService {
     }
 
     public UserDto getCurrentUser() {
-        // ⚠️ Витягуємо Telegram ID із контексту безпеки
         String telegramUserId = (String) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
 
         return userClient.getByTelegramUserId(telegramUserId);
+    }
+
+    public void logout() {
+        String telegramUserId = (String) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+
+        tokenRepository.deleteAccessToken(telegramUserId);
+        tokenRepository.deleteRefreshToken(telegramUserId);
     }
 }

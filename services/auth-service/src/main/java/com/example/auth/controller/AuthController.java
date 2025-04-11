@@ -4,6 +4,7 @@ import com.example.auth.service.AuthService;
 import com.example.common.dto.UserDto;
 import com.example.common.telegram.TelegramAuthRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,5 +25,11 @@ public class AuthController {
     @GetMapping("/me")
     public UserDto me() {
         return authService.getCurrentUser();
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        authService.logout();
+        return ResponseEntity.ok().build();
     }
 }
