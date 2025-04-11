@@ -1,28 +1,37 @@
 package com.example.common.telegram;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class TelegramAuthRequest {
 
     @JsonProperty("id")
+    @NotBlank(message = "Telegram ID is required")
     private String telegramUserId;
 
     @JsonProperty("username")
+    @NotBlank(message = "Username is required")
     private String username;
 
     @JsonProperty("first_name")
+    @Size(max = 100, message = "First name too long")
     private String firstName;
 
     @JsonProperty("last_name")
+    @Size(max = 100, message = "Last name too long")
     private String lastName;
 
     @JsonProperty("photo_url")
+    @Size(max = 512, message = "Photo URL too long")
     private String photoUrl;
 
     @JsonProperty("auth_date")
+    @NotBlank(message = "Auth date is required")
     private String authDate;
 
     @JsonProperty("hash")
+    @NotBlank(message = "Hash is required")
     private String hash;
 
     public TelegramAuthRequest() {}
@@ -83,10 +92,6 @@ public class TelegramAuthRequest {
         this.hash = hash;
     }
 
-    /**
-     * Telegram повертає email лише для ботів з запитом email.
-     * Можна використовувати username як email-замінник.
-     */
     public String getEmail() {
         return username != null ? username + "@telegram.local" : null;
     }
