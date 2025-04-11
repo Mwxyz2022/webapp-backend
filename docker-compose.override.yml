@@ -1,0 +1,15 @@
+#services:
+#  auth-service:
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=dev
+##    volumes:
+##      - ./services/auth-service:/app/services/auth-service
+##      - ./common:/app/common
+##      - ./infrastructure/redis-config:/app/infrastructure/redis-config
+#
+#  user-service:
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=dev
+##    volumes:
+##      - ./services/user-service:/app/services/user-service
+##      - ./common:/app/common

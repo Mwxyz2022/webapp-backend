@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8086
   error:
     include-message: always
     include-binding-errors: always
@@ -7,21 +7,17 @@ server:
 
 spring:
   application:
-    name: auth-service
+    name: user-service
 
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      database: 0
-      password: password
+  datasource:
+    url: jdbc:postgresql://localhost:5433/user_db
+    username: postgres
+    password: password
 
-jwt:
-  secret: "dev-secret-very-long-key-over-32-bytes!!"
-
-telegram:
-  bot-token: "your_test_token"
-  check-hash: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
 logging:
   level:

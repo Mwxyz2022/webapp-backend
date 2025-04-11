@@ -1,0 +1,30 @@
+services:
+  auth-service:
+    image: auth-service:latest
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    ports:
+      - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JWT_SECRET=${JWT_SECRET}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      - user-service
+
+  user-service:
+    image: user-service:latest
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    ports:
+      - "8086:8086"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}

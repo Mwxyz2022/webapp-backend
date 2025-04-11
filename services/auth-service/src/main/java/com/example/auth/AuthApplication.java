@@ -1,16 +1,15 @@
 package com.example.auth;
 
+import com.example.auth.client.config.EnableUserClient;
+import com.example.common.config.EnableCommonModule;
+import com.example.redis.config.EnableRedisModule;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 
-// ✅ Явно вказуємо всі потрібні базові пакети
-@SpringBootApplication(scanBasePackages = {
-        "com.example.auth",
-        "com.example.common",
-        "com.example.redis"  // 👈 обов’язково для RedisTokenRepositoryImpl
-})
-@EnableFeignClients(basePackages = "com.example.auth.client")
+@SpringBootApplication
+@EnableCommonModule
+@EnableRedisModule
+@EnableUserClient
 public class AuthApplication {
     public static void main(String[] args) {
         SpringApplication.run(AuthApplication.class, args);

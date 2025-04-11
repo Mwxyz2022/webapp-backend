@@ -4,16 +4,22 @@ server:
 spring:
   application:
     name: auth-service
+
   data:
     redis:
-      host: localhost
+      host: host.docker.internal
       port: 6379
       database: 0
-      password: password
+      password: ${REDIS_PASSWORD}
 
 jwt:
   secret: "${JWT_SECRET}"
 
 telegram:
-  bot-token: real_prod_bot_token
+  bot-token: "${TELEGRAM_BOT_TOKEN}"
   check-hash: true
+
+logging:
+  level:
+    root: INFO
+    com.example: INFO
