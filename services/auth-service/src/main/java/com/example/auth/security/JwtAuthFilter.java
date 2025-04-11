@@ -1,12 +1,14 @@
 package com.example.auth.security;
-import org.springframework.lang.NonNull;
+
+import com.example.common.exceptions.TokenNotFoundException;
+import com.example.common.utils.JwtUtil;
 import com.example.redis.RedisTokenRepository;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -16,11 +18,11 @@ import java.util.Collections;
 
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final String secret;
+    private final JwtUtil jwtUtil;
     private final RedisTokenRepository tokenRepository;
 
-    public JwtAuthFilter(String secret, RedisTokenRepository tokenRepository) {
-        this.secret = secret;
+    public JwtAuthFilter(JwtUtil jwtUtil, RedisTokenRepository tokenRepository) {
+        this.jwtUtil = jwtUtil;
         this.tokenRepository = tokenRepository;
     }
 
@@ -35,27 +37,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             try {
-                Claims claims = Jwts.parserBuilder()
-                        .setSigningKey(secret.getBytes())
-                        .build()
-                        .parseClaimsJws(token)
-                        .getBody();
-
+                Claims claims = jwtUtil.parseToken(token);
                 String telegramUserId = claims.getSubject();
 
-                // Перевірка: токен існує в Redis
                 String storedToken = tokenRepository.getAccessToken(telegramUserId);
                 if (storedToken == null || !storedToken.equals(token)) {
-                    throw new RuntimeException("Token not found or invalidated in Redis");
+                    throw new TokenNotFoundException();
                 }
 
-                // Установка користувача в SecurityContext
                 var auth = new UsernamePasswordAuthenticationToken(
                         telegramUserId, null, Collections.emptyList());
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
+            } catch (TokenNotFoundException e) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+                return;
             } catch (Exception ex) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
                 return;
             }
         }

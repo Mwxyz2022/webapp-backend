@@ -1,6 +1,7 @@
 package com.example.auth.config;
 
 import com.example.auth.security.JwtAuthFilter;
+import com.example.common.utils.JwtUtil;
 import com.example.redis.RedisTokenRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +18,13 @@ public class SecurityConfig {
     private String secret;
 
     @Bean
+    public JwtUtil jwtUtil() {
+        return new JwtUtil(secret, 3600_000); // 1 година
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   JwtUtil jwtUtil,
                                                    RedisTokenRepository tokenRepository) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -25,7 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/telegram").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtAuthFilter(secret, tokenRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthFilter(jwtUtil, tokenRepository), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
