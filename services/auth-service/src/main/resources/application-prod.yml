@@ -11,6 +11,9 @@ spring:
       database: 0
       password: password
 
+jwt:
+  secret: "${JWT_SECRET}"
+
 telegram:
   bot-token: real_prod_bot_token
   check-hash: true

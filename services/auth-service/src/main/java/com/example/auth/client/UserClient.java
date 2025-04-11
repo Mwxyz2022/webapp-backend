@@ -12,4 +12,7 @@ public interface UserClient {
 
     @PostMapping("/internal/users")
     void create(@RequestBody UserDto user);
+
+    @GetMapping("/internal/users/{telegramUserId}")
+    UserDto getByTelegramUserId(@PathVariable String telegramUserId);
 }

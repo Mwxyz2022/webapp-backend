@@ -1,7 +1,9 @@
 package com.example.auth.controller;
 
 import com.example.auth.service.AuthService;
+import com.example.common.dto.UserDto;
 import com.example.common.telegram.TelegramAuthRequest;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,7 +17,12 @@ public class AuthController {
     }
 
     @PostMapping("/telegram")
-    public String telegram(@RequestBody TelegramAuthRequest request) {
+    public String telegram(@Valid @RequestBody TelegramAuthRequest request) {
         return authService.telegramAuth(request);
+    }
+
+    @GetMapping("/me")
+    public UserDto me() {
+        return authService.getCurrentUser();
     }
 }

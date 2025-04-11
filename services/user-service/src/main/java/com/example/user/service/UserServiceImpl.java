@@ -5,6 +5,8 @@ import com.example.user.entity.UserEntity;
 import com.example.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -29,5 +31,23 @@ public class UserServiceImpl implements UserService {
         user.setPhotoUrl(dto.getPhotoUrl());
         user.setRole(dto.getRole());
         userRepository.save(user);
+    }
+
+    @Override
+    public UserDto getByTelegramUserId(String telegramUserId) {
+        Optional<UserEntity> optional = userRepository.findByTelegramUserId(telegramUserId);
+
+        UserEntity entity = optional.orElseThrow(() ->
+                new RuntimeException("User not found with Telegram ID: " + telegramUserId));
+
+        return new UserDto(
+                entity.getId(),
+                entity.getTelegramUserId(),
+                entity.getUsername(),
+                entity.getFirstName(),
+                entity.getLastName(),
+                entity.getPhotoUrl(),
+                entity.getRole()
+        );
     }
 }

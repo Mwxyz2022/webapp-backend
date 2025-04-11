@@ -23,4 +23,9 @@ public class RedisTokenRepositoryImpl implements RedisTokenRepository {
     public void saveRefreshToken(String username, String token) {
         redisTemplate.opsForValue().set("refresh:" + username, token, Duration.ofDays(7));
     }
+
+    @Override
+    public String getAccessToken(String username) {
+        return redisTemplate.opsForValue().get("access:" + username);
+    }
 }

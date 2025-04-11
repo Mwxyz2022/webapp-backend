@@ -19,6 +19,9 @@ spring:
       database: 0
       password: password
 
+jwt:
+  secret: "dev-secret-very-long-key-over-32-bytes!!"
+
 telegram:
   bot-token: "your_test_token"
   check-hash: false

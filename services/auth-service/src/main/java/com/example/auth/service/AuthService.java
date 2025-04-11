@@ -7,6 +7,7 @@ import com.example.common.telegram.TelegramHashVerifier;
 import com.example.common.utils.JwtUtil;
 import com.example.redis.RedisTokenRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,23 +22,18 @@ public class AuthService {
     public AuthService(
             @Value("${telegram.bot-token}") String botToken,
             @Value("${telegram.check-hash:true}") boolean checkHash,
+            @Value("${jwt.secret}") String jwtSecret,
             UserClient userClient,
             RedisTokenRepository tokenRepository
     ) {
         this.verifier = new TelegramHashVerifier(botToken);
         this.userClient = userClient;
         this.tokenRepository = tokenRepository;
-        this.jwtUtil = new JwtUtil("supersecretkey-that-is-over-32-bytes-long!!", 3600_000); // 1h
+        this.jwtUtil = new JwtUtil(jwtSecret, 3600_000); // 1 година
         this.checkHash = checkHash;
     }
 
     public String telegramAuth(TelegramAuthRequest request) {
-        // 🔍 LOG DEBUG: вхідні дані
-        System.out.println("➡️ Telegram auth request received:");
-        System.out.println("ID: " + request.getTelegramUserId());
-        System.out.println("Username: " + request.getUsername());
-        System.out.println("First Name: " + request.getFirstName());
-        System.out.println("Hash: " + request.getHash());
 
         // 🧯 Null-check
         if (request.getTelegramUserId() == null || request.getUsername() == null) {
@@ -61,8 +57,6 @@ public class AuthService {
                     "USER"
             );
 
-            // LOG
-            System.out.println("🧾 Creating new user in user-service...");
             userClient.create(dto);
         }
 
@@ -73,8 +67,14 @@ public class AuthService {
         tokenRepository.saveAccessToken(request.getTelegramUserId(), accessToken);
         tokenRepository.saveRefreshToken(request.getTelegramUserId(), refreshToken);
 
-        System.out.println("✅ User authenticated. AccessToken: " + accessToken);
-
         return accessToken;
+    }
+
+    public UserDto getCurrentUser() {
+        // ⚠️ Витягуємо Telegram ID із контексту безпеки
+        String telegramUserId = (String) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+
+        return userClient.getByTelegramUserId(telegramUserId);
     }
 }

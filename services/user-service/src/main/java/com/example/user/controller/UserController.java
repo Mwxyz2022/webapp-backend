@@ -25,4 +25,9 @@ public class UserController {
     public boolean exists(@PathVariable String telegramUserId) {
         return userService.existsByTelegramUserId(telegramUserId);
     }
+
+    @GetMapping("/{telegramUserId}")
+    public ResponseEntity<UserDto> getByTelegramUserId(@PathVariable String telegramUserId) {
+        return ResponseEntity.ok(userService.getByTelegramUserId(telegramUserId));
+    }
 }
