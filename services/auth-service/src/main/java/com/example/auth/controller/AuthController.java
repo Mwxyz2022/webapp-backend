@@ -1,6 +1,7 @@
 package com.example.auth.controller;
 
 import com.example.auth.service.AuthService;
+import com.example.common.dto.RefreshTokenRequest;
 import com.example.common.dto.UserDto;
 import com.example.common.telegram.TelegramAuthRequest;
 import jakarta.validation.Valid;
@@ -31,5 +32,11 @@ public class AuthController {
     public ResponseEntity<Void> logout() {
         authService.logout();
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<String> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        String newAccessToken = authService.refresh(request.getRefreshToken());
+        return ResponseEntity.ok(newAccessToken);
     }
 }

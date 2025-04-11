@@ -1,11 +1,14 @@
 package com.example.auth.service;
 
 import com.example.auth.client.UserClient;
+import com.example.common.dto.RefreshTokenRequest;
 import com.example.common.dto.UserDto;
 import com.example.common.telegram.TelegramAuthRequest;
 import com.example.common.telegram.TelegramHashVerifier;
 import com.example.common.utils.JwtUtil;
 import com.example.redis.RedisTokenRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final RedisTokenRepository tokenRepository;
     private final boolean checkHash;
+    private final String jwtSecret;
 
     public AuthService(
             @Value("${telegram.bot-token}") String botToken,
@@ -31,6 +35,7 @@ public class AuthService {
         this.tokenRepository = tokenRepository;
         this.jwtUtil = new JwtUtil(jwtSecret, 3600_000); // 1 година
         this.checkHash = checkHash;
+        this.jwtSecret = jwtSecret;
     }
 
     public String telegramAuth(TelegramAuthRequest request) {
@@ -77,5 +82,31 @@ public class AuthService {
 
         tokenRepository.deleteAccessToken(telegramUserId);
         tokenRepository.deleteRefreshToken(telegramUserId);
+    }
+
+    public String refresh(String refreshToken) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(jwtSecret.getBytes())
+                    .build()
+                    .parseClaimsJws(refreshToken)
+                    .getBody();
+
+            String telegramUserId = claims.getSubject();
+
+            String storedToken = tokenRepository.getAccessToken(telegramUserId);
+            String storedRefresh = tokenRepository.getAccessToken(telegramUserId);
+            if (storedRefresh == null || !storedRefresh.equals(refreshToken)) {
+                throw new RuntimeException("❌ Refresh token is invalid or not found in Redis");
+            }
+
+            // Генеруємо новий accessToken
+            String newAccessToken = jwtUtil.generateToken(telegramUserId);
+            tokenRepository.saveAccessToken(telegramUserId, newAccessToken);
+            return newAccessToken;
+
+        } catch (Exception e) {
+            throw new RuntimeException("❌ Failed to refresh token", e);
+        }
     }
 }
