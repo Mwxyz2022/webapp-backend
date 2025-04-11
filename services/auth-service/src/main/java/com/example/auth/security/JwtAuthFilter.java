@@ -8,6 +8,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +19,8 @@ import java.io.IOException;
 import java.util.Collections;
 
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final JwtUtil jwtUtil;
     private final RedisTokenRepository tokenRepository;
@@ -42,6 +46,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 String storedToken = tokenRepository.getAccessToken(telegramUserId);
                 if (storedToken == null || !storedToken.equals(token)) {
+                    log.warn("❌ Token for user {} не знайдено в Redis або не співпадає", telegramUserId);
                     throw new TokenNotFoundException();
                 }
 
@@ -49,13 +54,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         telegramUserId, null, Collections.emptyList());
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
+                log.debug("✅ Аутентифікація успішна для користувача {}", telegramUserId);
+
             } catch (TokenNotFoundException e) {
+                log.warn("❌ Авторизація неуспішна: {}", e.getMessage());
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
                 return;
             } catch (Exception ex) {
+                log.error("❌ Помилка при обробці JWT токена", ex);
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
                 return;
             }
+        } else {
+            log.debug("🔒 Authorization header відсутній або не починається з Bearer");
         }
 
         filterChain.doFilter(request, response);
