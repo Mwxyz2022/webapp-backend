@@ -23,6 +23,7 @@ dependencyManagement {
 dependencies {
     implementation(project(":common"))
     implementation(project(":infrastructure:redis-config"))
+    implementation(project(":infrastructure:kafka-config"))
 
     // 🌐 REST + Feign
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -30,6 +31,7 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.kafka:spring-kafka")
 
     // 🔐 Security (для відкритого доступу до /auth/telegram)
     implementation("org.springframework.boot:spring-boot-starter-security")

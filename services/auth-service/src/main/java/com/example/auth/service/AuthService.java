@@ -1,6 +1,7 @@
 package com.example.auth.service;
 
 import com.example.auth.client.UserClient;
+import com.example.auth.kafka.AuthKafkaProducer;
 import com.example.common.dto.UserDto;
 import com.example.common.exceptions.InvalidTelegramHashException;
 import com.example.common.exceptions.TokenNotFoundException;
@@ -24,6 +25,7 @@ public class AuthService {
     private final UserClient userClient;
     private final JwtUtil jwtUtil;
     private final RedisTokenRepository tokenRepository;
+    private final AuthKafkaProducer kafkaProducer;
     private final boolean checkHash;
 
     public AuthService(
@@ -31,12 +33,14 @@ public class AuthService {
             @Value("${telegram.check-hash:true}") boolean checkHash,
             @Value("${jwt.secret}") String jwtSecret,
             UserClient userClient,
-            RedisTokenRepository tokenRepository
+            RedisTokenRepository tokenRepository,
+            AuthKafkaProducer kafkaProducer
     ) {
         this.verifier = new TelegramHashVerifier(botToken);
         this.userClient = userClient;
         this.tokenRepository = tokenRepository;
         this.jwtUtil = new JwtUtil(jwtSecret, 3600_000); // 1 година
+        this.kafkaProducer = kafkaProducer;
         this.checkHash = checkHash;
     }
 
@@ -71,6 +75,9 @@ public class AuthService {
         tokenRepository.saveAccessToken(request.getTelegramUserId(), accessToken);
         tokenRepository.saveRefreshToken(request.getTelegramUserId(), refreshToken);
 
+        // 🟢 Вихідна подія Kafka: користувач увійшов
+        kafkaProducer.sendLoginEvent(request.getTelegramUserId());
+
         log.info("Access + Refresh токени створені для користувача {}", request.getTelegramUserId());
         return accessToken;
     }
@@ -89,6 +96,10 @@ public class AuthService {
 
         tokenRepository.deleteAccessToken(telegramUserId);
         tokenRepository.deleteRefreshToken(telegramUserId);
+
+        // 🔴 Вихідна подія Kafka: користувач вийшов
+        kafkaProducer.sendLogoutEvent(telegramUserId);
+
         log.info("Logout: токени видалено для користувача {}", telegramUserId);
     }
 

@@ -12,4 +12,4 @@ project(":services:user-service").projectDir = file("services/user-service")
 include("infrastructure:redis-config")
 project(":infrastructure:redis-config").projectDir = file("infrastructure/redis-config")
 include("infrastructure:kafka-config")
-findProject(":infrastructure:kafka-config")?.name = "kafka-config"
+project(":infrastructure:kafka-config").projectDir  = file("infrastructure/kafka-config")

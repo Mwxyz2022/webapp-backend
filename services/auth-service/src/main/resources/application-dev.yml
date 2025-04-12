@@ -7,25 +7,38 @@ server:
 
 spring:
   application:
-    name: auth-service
+    name: auth-service  # Імʼя сервісу в Spring
 
   data:
     redis:
-      host: localhost
-      port: 6379
-      database: 0
-      password: password
+      host: localhost   # Redis на localhost (у prod буде host.docker.internal)
+      port: 6379        # Порт Redis
+      database: 0       # Redis DB номер
+      password: password  # Пароль Redis (спрощений для dev)
+
+  kafka:
+    bootstrap-servers: localhost:29092  # Адреса Kafka-брокера (локально)
+    consumer:
+      group-id: auth-service  # Ідентифікатор групи Kafka-консюмерів для auth-service
+      auto-offset-reset: earliest  # З якого місця почати читати, якщо немає offset'у (з початку)
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # Розпаковка ключа
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer  # Розпаковка JSON-повідомлення
+      properties:
+        spring.json.trusted.packages: '*'  # Дозволити десеріалізацію обʼєктів з будь-якого пакету
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer  # Серіалізація ключа
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer  # Серіалізація значення (JSON)
 
 jwt:
-  secret: "dev-secret-very-long-key-over-32-bytes!!"
+  secret: "dev-secret-very-long-key-over-32-bytes!!"  # Секрет для підпису JWT
 
 telegram:
-  bot-token: "your_test_token"
-  check-hash: false
+  bot-token: "your_test_token"  # Тестовий токен бота
+  check-hash: false  # У dev режимі вимикаємо перевірку хешу Telegram
 
 logging:
   level:
-    root: INFO
-    com.example: DEBUG
+    root: INFO  # Базовий рівень логування
+    com.example: DEBUG  # Для всіх наших пакетів — більш детальний DEBUG
   pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"  # Формат логів у консолі
