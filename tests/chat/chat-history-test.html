@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat History Test</title>
+</head>
+<body>
+<h2>📚 Chat History Test</h2>
+
+<p style="background:#f9f9f9; border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+    <strong>🔍 Що тестує ця сторінка?</strong><br>
+    Отримання історії повідомлень з MongoDB за chatId:<br>
+    - GET <code>/chat/history/{chatId}</code><br>
+    - Перевірка, чи дані повертаються збережені
+</p>
+
+<label>Chat ID (telegramId): <input type="text" id="chatId" value="123456"></label><br><br>
+<button onclick="loadHistory()">🔄 Завантажити історію</button>
+
+<pre id="log" style="border:1px solid #ccc; padding:10px; height:300px; overflow-y:scroll;"></pre>
+
+<script>
+    function log(message) {
+        const logBox = document.getElementById("log");
+        logBox.textContent += message + "\n";
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    async function loadHistory() {
+        const chatId = document.getElementById("chatId").value;
+
+        try {
+            const response = await fetch("http://localhost:1337/http://localhost:8082/chat/history/" + chatId);
+            if (!response.ok) {
+                throw new Error("HTTP status " + response.status);
+            }
+
+            const messages = await response.json();
+            log("✅ Історія повідомлень:");
+            messages.forEach(msg => {
+                log(`[${msg.timestamp}] ${msg.from} ➡ ${msg.to}: ${msg.text}`);
+            });
+
+        } catch (e) {
+            log("❌ Помилка завантаження історії: " + e);
+        }
+    }
+</script>
+</body>
+</html>

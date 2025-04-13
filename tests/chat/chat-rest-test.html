@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat REST Test</title>
+</head>
+<body>
+<h2>📤 Chat REST API Test (/chat/send)</h2>
+
+<p style="background:#f9f9f9; border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+    <strong>🔍 Що тестує ця сторінка?</strong><br>
+    Надсилання повідомлення через REST API до бекенду на <code>/chat/send</code>:
+<ul>
+    <li>📤 Відправка JSON через <code>fetch(..., POST)</code></li>
+    <li>💾 Повідомлення зберігається в MongoDB</li>
+    <li>📬 Повідомлення транслюється через WebSocket</li>
+    <li>🚀 Повідомлення публікується в Kafka (topic <code>chat-outgoing</code>)</li>
+</ul>
+</p>
+
+<label>Chat ID: <input type="text" id="chatId" value="123456"></label><br>
+<label>From (manager): <input type="text" id="from" value="manager-1"></label><br>
+<label>To (telegramId): <input type="text" id="to" value="123456789"></label><br>
+<label>Text: <input type="text" id="text" value="Привіт! Це REST тест"></label><br><br>
+
+<button onclick="sendMessage()">Send via REST</button>
+
+<pre id="log" style="border:1px solid #ccc; padding:10px; height:200px; overflow-y:scroll;"></pre>
+
+<script>
+    function log(message) {
+        const logBox = document.getElementById("log");
+        logBox.textContent += message + "\n";
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const payload = {
+            chatId: document.getElementById("chatId").value,
+            from: document.getElementById("from").value,
+            to: document.getElementById("to").value,
+            text: document.getElementById("text").value,
+            timestamp: null
+        };
+
+        try {
+            const response = await fetch("http://localhost:1337/http://localhost:8082/chat/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.text();
+            log("✅ Відповідь сервера: " + result);
+        } catch (e) {
+            log("❌ Помилка: " + e);
+        }
+    }
+</script>
+</body>
+</html>

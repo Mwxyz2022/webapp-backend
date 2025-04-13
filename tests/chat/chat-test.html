@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+
+<p style="background:#f9f9f9; border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+    <strong>🔍 Що тестує ця сторінка?</strong><br>
+    Це WebSocket тест для чату менеджера. Ви можете:
+<ul>
+    <li>📡 Підключитись до WebSocket-серверу через <code>/chat/ws</code></li>
+    <li>📤 Надіслати повідомлення з UI до WebSocket бекенду</li>
+    <li>💾 Зберегти повідомлення в MongoDB</li>
+    <li>📥 Отримати відповідь назад у WebSocket у реальному часі</li>
+    <li>📬 Повідомлення буде відправлено також у Kafka (topic <code>chat-outgoing</code>)</li>
+</ul>
+</p>
+
+<h2>🔌 Chat WebSocket Test</h2>
+
+<label>Chat ID: <input type="text" id="chatId" value="123456"></label><br>
+<label>From (manager): <input type="text" id="from" value="manager-1"></label><br>
+<label>To (telegramId): <input type="text" id="to" value="123456789"></label><br>
+<label>Text: <input type="text" id="text" value="Привіт! Це WS тест"></label><br><br>
+
+<button onclick="connect()">Connect</button>
+<button onclick="sendMessage()">Send</button>
+
+<pre id="log" style="border:1px solid #ccc; padding:10px; height:200px; overflow-y:scroll;"></pre>
+
+<script>
+    let stompClient = null;
+
+    function log(message) {
+        const logBox = document.getElementById("log");
+        logBox.textContent += message + "\n";
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function connect() {
+        const socket = new SockJS("http://localhost:8082/chat/ws");
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            log("✅ Connected: " + frame);
+            const chatId = document.getElementById("chatId").value;
+            stompClient.subscribe("/topic/chat." + chatId, function (message) {
+                log("📥 Received: " + message.body);
+            });
+        }, function (error) {
+            log("❌ Connection error: " + error);
+        });
+    }
+
+    function sendMessage() {
+        const message = {
+            chatId: document.getElementById("chatId").value,
+            from: document.getElementById("from").value,
+            to: document.getElementById("to").value,
+            text: document.getElementById("text").value,
+            timestamp: null
+        };
+        stompClient.send("/app/chat", {}, JSON.stringify(message));
+        log("📤 Sent: " + JSON.stringify(message));
+    }
+</script>
+</body>
+</html>
